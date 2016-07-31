@@ -1,11 +1,11 @@
 # 搭建ELK + Filebeat
 ## 版本（当前最新版本）
-Logstash: 2.3.4
-ElasticSearch: 2.3.4
-Kibana: 4.5.3
-Filebeat: 1.2.3
-Nginx: 1.10.0
-Jdk: 1.7 以上
+* Logstash: 2.3.4
+* ElasticSearch: 2.3.4
+* Kibana: 4.5.3
+* Filebeat: 1.2.3
+* Nginx: 1.10.0
+* Jdk: 1.7 以上
 
 ## ELK工作流图
 ![ELK workflow](https://assets.digitalocean.com/articles/elk/elk-infrastructure.png)
