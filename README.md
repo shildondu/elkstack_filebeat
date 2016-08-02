@@ -1,5 +1,14 @@
 # 搭建ELK + Filebeat
-## 版本（当前最新版本）
+
+[1. 版本](#版本)
+[2. 工作流图](#工作流图)
+[3. 配置及启动](#配置及启动)
+[4. 日志配置](#日志配置)
+[5. 搜索语法](#搜索语法)
+[6. 鉴权方案](#鉴权方案)
+[7. 其他配置方案](#其他配置方案)
+
+## 版本
 * Logstash: 2.3.4
 * ElasticSearch: 2.3.4
 * Kibana: 4.5.3
@@ -7,8 +16,8 @@
 * Nginx: 1.10.0
 * Jdk: 1.7 以上
 
-## ELK工作流图
-![ELK workflow](https://assets.digitalocean.com/articles/elk/elk-infrastructure.png)
+## 工作流图
+![ELK filebeat workflow](https://leanote.com/api/file/getImage?fileId=579ebea7ab644135ea0362c1)
 
 * Filebeat：安装在应用服务器或数据库服务器上，监听日志文件，然后将日志发送到Logstash。
 * Logstash：日志收集，过滤，输出。
@@ -16,7 +25,7 @@
 * Kibana：可视化工具，用于分析日志。
 * Ngnix：反向代理服务器，用于过滤访问请求。
 
-## ELK配置及启动
+## 配置及启动
 ### 1. ElasticSearch
 配置文件为项目根目录下的/config/elasticsearch.yml：
 ```
@@ -120,7 +129,7 @@ curl -XPUT localhost:9200/_template/logstash -d '
   "mappings": {
     "_default_": {
     	"_ttl": {
-    		"enable": true,
+    		"enabled": true,
     		"default": "30d"
     	},
         "dynamic_templates": [
@@ -200,6 +209,22 @@ curl -XPUT localhost:9200/_template/logstash -d '
 
 ## 日志配置
 日志在输入到Logstash的时候需要被Logstash解析，得按照Logstash所要求的json格式化，但是这项工作Filebeat已经帮我们做了，所以我们不需要在项目中做任何日志的配置改动。
+最终我们在日志文件中打印的信息会被添加到`message`字段。
+
+## 搜索语法
+因为Kibana在ELK当中主要用来查询展示数据的，具体的搜索由ElasticSearch提供，而ElasticSearch构建在Lucene之上，所以语法和Lucene相同。这里简单介绍几点：
+
+1. 转义特殊字符：`+ - && || ! () {} [] ^" ~ * ? : \`需要用`\`进行转义。
+2. 使用双引号作为短语搜索，测试中发现ES默认会将非字母符号作为分隔符进行分词，所以在搜索时间等字段时需要加上双引号，例如`"2016-08-01 10:38"`（测试发现只能精确到分）。
+3. 通配符：`?`匹配**单个**字符，`*`匹配**0到多个**字符。
+4. 模糊搜索：在一个单词后面加上`~`启用模糊搜索，例如`first~`也能搜索到`frist`。
+5. 限定字段，例如我们要搜索`message`字段中时间为2016-08-01的：`message: "2016-08-01"`。
+6. 范围搜索：数值和时间类型的字段可以对某一范围进行查询。如：
+`
+offset:[0 TO 1000]
+date:{"now-6h" TO "now"}
+`
+[ ] 表示端点数值包含在范围内，{ } 表示端点数值不包含在范围内。关键字要大写。
 
 ## 鉴权方案
 我们不想让所有人都能访问到我们的kibana，所以需要对请求做一个过滤。
@@ -223,7 +248,7 @@ printf "username:$(openssl passwd -crypt 123456)\n" >> conf/htpasswd
 ```
 重启nginx访问就需要用户密码才能登陆了。
 
-## 其他不用Filebeat的配置方案
+## 其他配置方案
 ### 1. Log4j
 修改Log4j配置文件，将Log4j的日志输出到SocketAppender：
 ```xml
