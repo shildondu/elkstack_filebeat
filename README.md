@@ -17,7 +17,7 @@
 * Jdk: 1.7 以上
 
 ## 工作流图
-![ELK filebeat workflow](https://leanote.com/api/file/getImage?fileId=579ebea7ab644135ea0362c1)
+![ELK filebeat workflow](./img/elkstack-filebeat.png)
 
 * Filebeat：安装在应用服务器或数据库服务器上，监听日志文件，然后将日志发送到Logstash。
 * Logstash：日志收集，过滤，输出。
